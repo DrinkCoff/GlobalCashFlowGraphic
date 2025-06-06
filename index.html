@@ -357,12 +357,13 @@
 
         // PDF export function
         function exportToPdf() {
+            console.log("Exporting to PDF initiated...");
             const originalBodyOverflow = document.body.style.overflow;
             document.body.style.overflow = 'hidden'; // Hide scrollbars during export
 
             const tempDiv = document.createElement('div');
             tempDiv.style.position = 'absolute';
-            tempDiv.style.left = '-9999px';
+            tempDiv.style.left = '-9999px'; // Position off-screen
             tempDiv.style.width = '100%';
             tempDiv.style.padding = '20px'; // Add some padding for the PDF content
             tempDiv.style.backgroundColor = 'white'; // Ensure background for print
@@ -411,21 +412,28 @@
             tempDiv.appendChild(llcSummaryTemp);
 
             document.body.appendChild(tempDiv);
+            console.log("Temporary div appended to body.");
 
             // Use a timeout to ensure all elements are rendered before PDF conversion
             setTimeout(() => {
+                console.log("Attempting PDF generation after timeout...");
                 html2pdf().from(tempDiv).set({
                     margin: [20, 20, 20, 20], // Top, Left, Bottom, Right
                     filename: 'Financial_Summary_Report.pdf',
                     image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2, logging: true, useCORS: true }, // Higher scale for better quality
+                    html2canvas: { scale: 2, logging: true, useCORS: true, allowTaint: true }, # Added allowTaint
                     jsPDF: { unit: 'pt', format: 'letter', orientation: 'portrait' }
-                }).save().finally(() => {
+                }).save().then(() => {
+                    console.log("PDF generation successful!");
+                }).catch(error => {
+                    console.error("PDF generation failed:", error);
+                }).finally(() => {
                     // Clean up the temporary container after PDF generation
                     document.body.removeChild(tempDiv);
                     document.body.style.overflow = originalBodyOverflow; // Restore scrollbars
+                    console.log("Clean up complete.");
                 });
-            }, 500); // 500ms delay
+            }, 1000); # Increased delay to 1000ms
         }
     </script>
 </body>
